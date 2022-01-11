@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"log"
-	"os"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 	"strings"
 )
 
@@ -62,14 +62,24 @@ func init() {
 	CharToMorse["8"] = "---.."
 	CharToMorse["9"] = "----."
 	CharToMorse["0"] = "-----"
-	CharToMorse[" "] = " "
+	CharToMorse[" "] = "/"
 
 	MorseToChar = FlipMap(CharToMorse)
-	MorseToChar["   "] = " "
+}
+
+func IsMorseValid(m string) bool {
+	codes := strings.Split(m, " ")
+	for i := 0; i < len(codes); i++ {
+		if MorseToChar[codes[i]] == "" {
+			return false
+		}
+	}
+	return true
 }
 
 func CraftMorseFromString(s string) string {
 	var ret string
+	s = strings.ToUpper(s)
 	for i := 0; i < len(s); i++ {
 		ret += CharToMorse[s[i:i+1]] + " "
 	}
@@ -77,15 +87,13 @@ func CraftMorseFromString(s string) string {
 }
 
 func CraftStringFromMorse(m string) string {
+	if !IsMorseValid(m) {
+		return "Invalid morse code"
+	}
 	var ret string
 	// Split the total string into sections
 	codes := strings.Split(m, " ")
-
 	for i := 0; i < len(codes); i++ {
-		if codes[i] == " " {
-			log.Println("e")
-			ret += codes[i]
-		}
 		ret += MorseToChar[codes[i]]
 	}
 	ret = strings.ReplaceAll(ret, "   ", " ")
@@ -93,16 +101,43 @@ func CraftStringFromMorse(m string) string {
 }
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		fmt.Print("-> ")
-		text, _ := reader.ReadString('\n')
-		text = strings.ReplaceAll(text, "\n", "")
-		text = strings.ToUpper(text)
-		morse := CraftMorseFromString(text)
-		fmt.Println(morse)
-		back := CraftStringFromMorse(morse)
-		fmt.Println(back)
+	app := app.New()
+	window := app.NewWindow("CPT - Brandon Plank")
+	window.Resize(fyne.Size{Width: 500, Height: 400})
 
-	}
+	input := widget.NewEntry()
+	input.SetPlaceHolder("Enter text...")
+
+	modeLabel := widget.NewLabel("Text to Morse")
+
+	output := widget.NewLabel("")
+
+	textToMorse := false
+
+	window.SetContent(container.NewVBox(
+		input,
+		widget.NewButton("Translate", func() {
+			if textToMorse {
+				output.Text = CraftMorseFromString(input.Text)
+				output.Refresh()
+			} else {
+				output.Text = CraftStringFromMorse(input.Text)
+				output.Refresh()
+			}
+		}),
+		container.NewHBox(
+			widget.NewCheck("", func(isOn bool) {
+				textToMorse = !isOn
+				if !isOn {
+					modeLabel.Text = "Text To Morse"
+				} else {
+					modeLabel.Text = "Morse to Text"
+				}
+				modeLabel.Refresh()
+			}),
+			modeLabel,
+		),
+		output,
+	))
+	window.ShowAndRun()
 }
