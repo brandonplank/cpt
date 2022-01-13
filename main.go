@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"regexp"
 	"strings"
 )
 
@@ -62,12 +63,17 @@ func init() {
 	CharToMorse["8"] = "---.."
 	CharToMorse["9"] = "----."
 	CharToMorse["0"] = "-----"
-	CharToMorse[" "] = "/"
+
+	CharToMorse["."] = ".-.-.-"
+	CharToMorse[","] = "--..--"
+	CharToMorse["?"] = "..--.."
+	CharToMorse[" "] = "/" // Space
 
 	MorseToChar = FlipMap(CharToMorse)
 }
 
-func IsMorseValid(m string) bool {
+// IsMorseValidStageTwo Loops through all codes to make sure they match with the MAP
+func IsMorseValidStageTwo(m string) bool {
 	codes := strings.Split(m, " ")
 	for i := 0; i < len(codes); i++ {
 		if MorseToChar[codes[i]] == "" {
@@ -77,6 +83,17 @@ func IsMorseValid(m string) bool {
 	return true
 }
 
+// IsStringValid Makes sure that our translator can parse this string
+func IsStringValid(m string) bool {
+	return regexp.MustCompile(`^[a-zA-Z0-9.,?]+( [a-zA-Z0-9.,?]+)*$`).MatchString(m)
+}
+
+// IsMorseValidStageOne Loops through all codes to make sure they match with the MAP
+func IsMorseValidStageOne(m string) bool {
+	return regexp.MustCompile(`[.\-]+`).MatchString(m) && !regexp.MustCompile(`[a-zA-Z0-9]+`).MatchString(m)
+}
+
+// CraftMorseFromString Takes a message and converts all the characters into valid morse code
 func CraftMorseFromString(s string) string {
 	var ret string
 	s = strings.ToUpper(s)
@@ -86,8 +103,9 @@ func CraftMorseFromString(s string) string {
 	return ret
 }
 
+// CraftStringFromMorse Takes a morse code and converts it into human-readable text
 func CraftStringFromMorse(m string) string {
-	if !IsMorseValid(m) {
+	if !IsMorseValidStageTwo(m) {
 		return "Invalid morse code"
 	}
 	var ret string
@@ -108,35 +126,22 @@ func main() {
 	input := widget.NewEntry()
 	input.SetPlaceHolder("Enter text...")
 
-	modeLabel := widget.NewLabel("Text to Morse")
-
 	output := widget.NewLabel("")
-
-	textToMorse := false
 
 	window.SetContent(container.NewVBox(
 		input,
 		widget.NewButton("Translate", func() {
-			if textToMorse {
-				output.Text = CraftMorseFromString(input.Text)
-				output.Refresh()
-			} else {
+			if IsMorseValidStageOne(input.Text) {
 				output.Text = CraftStringFromMorse(input.Text)
-				output.Refresh()
-			}
-		}),
-		container.NewHBox(
-			widget.NewCheck("", func(isOn bool) {
-				textToMorse = !isOn
-				if !isOn {
-					modeLabel.Text = "Text To Morse"
+			} else {
+				if IsStringValid(input.Text) {
+					output.Text = CraftMorseFromString(input.Text)
 				} else {
-					modeLabel.Text = "Morse to Text"
+					output.Text = "Invalid string"
 				}
-				modeLabel.Refresh()
-			}),
-			modeLabel,
-		),
+			}
+			output.Refresh()
+		}),
 		output,
 	))
 	window.ShowAndRun()
