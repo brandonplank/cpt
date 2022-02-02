@@ -5,8 +5,10 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"log"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var (
@@ -15,6 +17,7 @@ var (
 )
 
 func FlipMap(m map[string]string) map[string]string {
+	// Make a new map for the return with the length of m
 	ret := make(map[string]string, len(m))
 	for index, object := range m {
 		ret[object] = index
@@ -23,9 +26,6 @@ func FlipMap(m map[string]string) map[string]string {
 }
 
 func init() {
-	/*
-		Eng to morse chars
-	*/
 	CharToMorse["A"] = ".-"
 	CharToMorse["B"] = "-..."
 	CharToMorse["C"] = "-.-."
@@ -100,6 +100,7 @@ func CraftMorseFromString(s string) string {
 	for i := 0; i < len(s); i++ {
 		ret += CharToMorse[s[i:i+1]] + " "
 	}
+	log.Println("[MORSE]", ret)
 	return ret
 }
 
@@ -115,10 +116,22 @@ func CraftStringFromMorse(m string) string {
 		ret += MorseToChar[codes[i]]
 	}
 	ret = strings.ReplaceAll(ret, "   ", " ")
+	log.Println("[TEXT]", ret)
 	return ret
 }
 
+func background() {
+	i := 0
+	for {
+		i++
+		log.Println("[Test]", i)
+		time.Sleep(1 * time.Second)
+	}
+}
+
 func main() {
+	log.Println("Starting GUI for CPT")
+	// go background()
 	app := app.New()
 	window := app.NewWindow("CPT - Brandon Plank")
 	window.Resize(fyne.Size{Width: 500, Height: 400})
