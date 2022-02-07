@@ -112,6 +112,8 @@ func IsMorseValidStageTwo(m string) bool {
 	return true
 }
 
+// For all regex, I used https://regex101.com/ to make custom regex.
+
 // IsStringValid Makes sure that our translator can parse this string
 func IsStringValid(m string) bool {
 	return regexp.MustCompile(`^[a-zA-Z0-9.,?]+( [a-zA-Z0-9.,?]+)*$`).MatchString(m)
