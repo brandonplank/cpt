@@ -1,6 +1,33 @@
+/*
+
+	This project was created during my 2022 school year for the Create Performance Task for
+	AP Computer Science
+
+	All rights are relinquished to the CPT management and staff for use for grading.
+
+	CPT License, By Brandon Plank.
+	Brandon Plank © 2022, All Rights reserved.
+
+
+	* This code MAY be used for demonstration
+
+	* This code may only be viewed by the CPT graders until after
+	the grade has been entered
+
+	* This code may NOT be published ander any name, but my own
+
+	* This code may only be public AFTER the grading process
+
+	* This code may NOT be used in any other public or private project
+
+	By reviewing my code, you agree to this license.
+
+*/
+
 package main
 
 import (
+	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -24,6 +51,7 @@ func FlipMap(m map[string]string) map[string]string {
 	return ret
 }
 
+// init Sets all the morse codes and flips it into another map
 func init() {
 	CharToMorse["A"] = ".-"
 	CharToMorse["B"] = "-..."
@@ -66,7 +94,9 @@ func init() {
 	CharToMorse["."] = ".-.-.-"
 	CharToMorse[","] = "--..--"
 	CharToMorse["?"] = "..--.."
-	CharToMorse[" "] = "/" // Space
+
+	// Space, this is normalized in typed morse code
+	CharToMorse[" "] = "/"
 
 	MorseToChar = FlipMap(CharToMorse)
 }
@@ -97,9 +127,12 @@ func CraftMorseFromString(s string) string {
 	var ret string
 	s = strings.ToUpper(s)
 	for i := 0; i < len(s); i++ {
-		ret += CharToMorse[s[i:i+1]] + " "
+		ret += CharToMorse[s[i:i+1]]
+		if i < len(s)-1 {
+			ret += " "
+		}
 	}
-	log.Println("[MORSE]", ret)
+	log.Println(fmt.Sprintf("[CONVERT] \"%s\" -> (%s)", s, ret))
 	return ret
 }
 
@@ -115,10 +148,11 @@ func CraftStringFromMorse(m string) string {
 		ret += MorseToChar[codes[i]]
 	}
 	ret = strings.ReplaceAll(ret, "   ", " ")
-	log.Println("[TEXT]", ret)
+	log.Println(fmt.Sprintf("[CONVERT] \"%s\" <- (%s)", ret, m))
 	return ret
 }
 
+// main Provides an entry point for our application that contains the GUI init
 func main() {
 	log.Println("Starting GUI for CPT")
 	// go background()
