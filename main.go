@@ -8,7 +8,6 @@ import (
 	"log"
 	"regexp"
 	"strings"
-	"time"
 )
 
 var (
@@ -118,15 +117,6 @@ func CraftStringFromMorse(m string) string {
 	ret = strings.ReplaceAll(ret, "   ", " ")
 	log.Println("[TEXT]", ret)
 	return ret
-}
-
-func background() {
-	i := 0
-	for {
-		i++
-		log.Println("[Test]", i)
-		time.Sleep(1 * time.Second)
-	}
 }
 
 func main() {
