@@ -112,7 +112,7 @@ func IsMorseValidStageTwo(m string) bool {
 	return true
 }
 
-// For all regex, I used https://regex101.com/ to make custom regex.
+// For all regex, I used https://regex101.com/ to make build and test custom regex
 
 // IsStringValid Makes sure that our translator can parse this string
 func IsStringValid(m string) bool {
@@ -158,8 +158,8 @@ func CraftStringFromMorse(m string) string {
 func main() {
 	log.Println("Starting GUI for CPT")
 	// go background()
-	app := app.New()
-	window := app.NewWindow("CPT - Brandon Plank")
+	cpt := app.New()
+	window := cpt.NewWindow("CPT - Brandon Plank")
 	window.Resize(fyne.Size{Width: 500, Height: 400})
 
 	input := widget.NewEntry()
