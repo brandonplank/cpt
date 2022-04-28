@@ -28,10 +28,7 @@ package main
 
 import (
 	"fmt"
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
+	gui "github.com/AllenDang/giu"
 	"log"
 	"regexp"
 	"strings"
@@ -50,6 +47,8 @@ func FlipMap(m map[string]string) map[string]string {
 	}
 	return ret
 }
+
+var morseCodeHelp []string
 
 // init Sets all the morse codes and flips it into another map
 func init() {
@@ -94,11 +93,20 @@ func init() {
 	CharToMorse["."] = ".-.-.-"
 	CharToMorse[","] = "--..--"
 	CharToMorse["?"] = "..--.."
+	CharToMorse["!"] = "-.-.--"
+	CharToMorse["("] = "-.--."
+	CharToMorse[")"] = "-.--.-"
+	CharToMorse[":"] = "---..."
 
 	// Space, this is normalized in typed morse code
 	CharToMorse[" "] = "/"
 
 	MorseToChar = FlipMap(CharToMorse)
+
+	// Add all morse codes to a list for autocomplete
+	for _, object := range CharToMorse {
+		morseCodeHelp = append(morseCodeHelp, object)
+	}
 }
 
 // IsMorseValidStageTwo Loops through all codes to make sure they match with the MAP
@@ -116,7 +124,7 @@ func IsMorseValidStageTwo(m string) bool {
 
 // IsStringValid Makes sure that our translator can parse this string
 func IsStringValid(m string) bool {
-	return regexp.MustCompile(`^[a-zA-Z0-9.,?]+( [a-zA-Z0-9.,?]+)*$`).MatchString(m)
+	return regexp.MustCompile(`^[a-zA-Z0-9.,?!():]+( [a-zA-Z0-9.,?!():]+)*$`).MatchString(m)
 }
 
 // IsMorseValidStageOne Loops through all codes to make sure they match with the MAP
@@ -154,34 +162,42 @@ func CraftStringFromMorse(m string) string {
 	return ret
 }
 
+var text string
+var output string
+
+// GuiLoop provides the main GUI loop for our app.
+func GuiLoop() {
+	gui.SingleWindow().Layout(
+		gui.Align(gui.AlignCenter).To(
+			gui.Label("Morse Code Translator"),
+			gui.InputText(&text).AutoComplete(morseCodeHelp),
+			gui.Row(
+				gui.Button("Translate").OnClick(func() {
+					if IsMorseValidStageOne(text) {
+						output = CraftStringFromMorse(text)
+					} else {
+						if IsStringValid(text) {
+							output = CraftMorseFromString(text)
+						} else {
+							output = "Invalid string"
+						}
+					}
+					gui.Update()
+				}),
+				gui.Button("Clear").OnClick(func() {
+					text = ""
+					output = ""
+					gui.Update()
+				}),
+			),
+			gui.Label(output).Wrapped(true),
+		),
+	)
+}
+
 // main Provides an entry point for our application that contains the GUI init
 func main() {
-	log.Println("Starting GUI for CPT")
-	// go background()
-	cpt := app.New()
-	window := cpt.NewWindow("CPT - Brandon Plank")
-	window.Resize(fyne.Size{Width: 500, Height: 400})
-
-	input := widget.NewEntry()
-	input.SetPlaceHolder("Enter text...")
-
-	output := widget.NewLabel("")
-
-	window.SetContent(container.NewVBox(
-		input,
-		widget.NewButton("Translate", func() {
-			if IsMorseValidStageOne(input.Text) {
-				output.Text = CraftStringFromMorse(input.Text)
-			} else {
-				if IsStringValid(input.Text) {
-					output.Text = CraftMorseFromString(input.Text)
-				} else {
-					output.Text = "Invalid string"
-				}
-			}
-			output.Refresh()
-		}),
-		output,
-	))
-	window.ShowAndRun()
+	log.Println("Starting GUI")
+	win := gui.NewMasterWindow("Morse Code Translator", 500, 300, gui.MasterWindowFlagsNotResizable)
+	win.Run(GuiLoop)
 }
