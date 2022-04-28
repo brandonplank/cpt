@@ -124,7 +124,7 @@ func IsMorseValidStageTwo(m string) bool {
 
 // IsStringValid Makes sure that our translator can parse this string
 func IsStringValid(m string) bool {
-	return regexp.MustCompile(`^[a-zA-Z0-9.,?!():]+( [a-zA-Z0-9.,?!():]+)*$`).MatchString(m)
+	return regexp.MustCompile(`^[a-zA-Z0-9.,?!(): ]+( [a-zA-Z0-9.,?!(): ]+)*$`).MatchString(m)
 }
 
 // IsMorseValidStageOne Loops through all codes to make sure they match with the MAP
@@ -164,32 +164,40 @@ func CraftStringFromMorse(m string) string {
 
 var text string
 var output string
+var autoTranslate bool
+
+func DetectAndTranslate() {
+	if IsMorseValidStageOne(text) {
+		output = CraftStringFromMorse(text)
+	} else {
+		if IsStringValid(text) {
+			output = CraftMorseFromString(text)
+		} else {
+			output = "Invalid string"
+		}
+	}
+	gui.Update()
+}
 
 // GuiLoop provides the main GUI loop for our app.
 func GuiLoop() {
 	gui.SingleWindow().Layout(
 		gui.Align(gui.AlignCenter).To(
 			gui.Label("Morse Code Translator"),
-			gui.InputText(&text).AutoComplete(morseCodeHelp),
+			gui.InputText(&text).AutoComplete(morseCodeHelp).OnChange(func() {
+				if autoTranslate {
+					DetectAndTranslate()
+				}
+			}),
 			gui.Row(
-				gui.Button("Translate").OnClick(func() {
-					if IsMorseValidStageOne(text) {
-						output = CraftStringFromMorse(text)
-					} else {
-						if IsStringValid(text) {
-							output = CraftMorseFromString(text)
-						} else {
-							output = "Invalid string"
-						}
-					}
-					gui.Update()
-				}),
+				gui.Button("Translate").OnClick(DetectAndTranslate),
 				gui.Button("Clear").OnClick(func() {
 					text = ""
 					output = ""
 					gui.Update()
 				}),
 			),
+			gui.Checkbox("Auto-Translate", &autoTranslate),
 			gui.Label(output).Wrapped(true),
 		),
 	)
