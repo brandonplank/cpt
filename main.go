@@ -1,34 +1,8 @@
-/*
-
-	This project was created during my 2022 school year for the Create Performance Task for
-	AP Computer Science
-
-	All rights are relinquished to the CPT management and staff for use for grading.
-
-	CPT License, By Brandon Plank.
-	Brandon Plank © 2022, All Rights reserved.
-
-
-	* This code MAY be used for demonstration
-
-	* This code may only be viewed by the CPT graders until after
-	the grade has been entered
-
-	* This code may NOT be published ander any name, but my own
-
-	* This code may only be public AFTER the grading process
-
-	* This code may NOT be used in any other public or private project
-
-	By reviewing my code, you agree to this license.
-
-*/
-
 package main
 
 import (
 	"fmt"
-	gui "github.com/AllenDang/giu"
+	gui "github.com/AllenDang/giu" // Golang maps for imgui
 	"log"
 	"regexp"
 	"strings"
@@ -101,6 +75,7 @@ func init() {
 	// Space, this is normalized in typed morse code
 	CharToMorse[" "] = "/"
 
+	// For mose to english conversion
 	MorseToChar = FlipMap(CharToMorse)
 
 	// Add all morse codes to a list for autocomplete
@@ -110,8 +85,8 @@ func init() {
 }
 
 // IsMorseValidStageTwo Loops through all codes to make sure they match with the MAP
-func IsMorseValidStageTwo(m string) bool {
-	codes := strings.Split(m, " ")
+func IsMorseValidStageTwo(s string) bool {
+	codes := strings.Split(s, " ")
 	for i := 0; i < len(codes); i++ {
 		if MorseToChar[codes[i]] == "" {
 			return false
@@ -123,13 +98,13 @@ func IsMorseValidStageTwo(m string) bool {
 // For all regex, I used https://regex101.com/ to make build and test custom regex
 
 // IsStringValid Makes sure that our translator can parse this string
-func IsStringValid(m string) bool {
-	return regexp.MustCompile(`^[a-zA-Z0-9.,?!(): ]+( [a-zA-Z0-9.,?!(): ]+)*$`).MatchString(m)
+func IsStringValid(s string) bool {
+	return regexp.MustCompile(`^[a-zA-Z\d.,?!(): ]+( [a-zA-Z\d.,?!(): ]+)*$`).MatchString(s)
 }
 
 // IsMorseValidStageOne Loops through all codes to make sure they match with the MAP
-func IsMorseValidStageOne(m string) bool {
-	return regexp.MustCompile(`[.\-]+`).MatchString(m) && !regexp.MustCompile(`[a-zA-Z0-9]+`).MatchString(m)
+func IsMorseValidStageOne(s string) bool {
+	return regexp.MustCompile(`[.\-]+`).MatchString(s) && !regexp.MustCompile(`[a-zA-Z\d]+`).MatchString(s)
 }
 
 // CraftMorseFromString Takes a message and converts all the characters into valid morse code
@@ -147,18 +122,18 @@ func CraftMorseFromString(s string) string {
 }
 
 // CraftStringFromMorse Takes a morse code and converts it into human-readable text
-func CraftStringFromMorse(m string) string {
-	if !IsMorseValidStageTwo(m) {
+func CraftStringFromMorse(s string) string {
+	if !IsMorseValidStageTwo(s) {
 		return "Invalid morse code"
 	}
 	var ret string
 	// Split the total string into sections
-	codes := strings.Split(m, " ")
+	codes := strings.Split(s, " ")
 	for i := 0; i < len(codes); i++ {
 		ret += MorseToChar[codes[i]]
 	}
 	ret = strings.ReplaceAll(ret, "   ", " ")
-	log.Println(fmt.Sprintf("[CONVERT] \"%s\" <- (%s)", ret, m))
+	log.Println(fmt.Sprintf("[CONVERT] \"%s\" <- (%s)", ret, s))
 	return ret
 }
 
@@ -166,6 +141,7 @@ var text string
 var output string
 var autoTranslate bool
 
+// DetectAndTranslate gets text from the GUI and checks if its morse or english, then converts accordingly
 func DetectAndTranslate() {
 	if IsMorseValidStageOne(text) {
 		output = CraftStringFromMorse(text)
